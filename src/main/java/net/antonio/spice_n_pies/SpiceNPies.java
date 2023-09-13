@@ -1,11 +1,18 @@
 package net.antonio.spice_n_pies;
 
 import com.mojang.logging.LogUtils;
+import net.antonio.spice_n_pies.item.ModItems;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.food.FoodData;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -14,8 +21,12 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
+
+import static net.antonio.spice_n_pies.item.ModItems.BASIL;
+import static net.antonio.spice_n_pies.item.ModItems.GARLIC;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(SpiceNPies.MOD_ID)
@@ -23,9 +34,12 @@ public class SpiceNPies
 {
     public static final String MOD_ID = "spice_n_pies";
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
     public SpiceNPies()
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        ModItems.register(modEventBus);
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
@@ -56,8 +70,20 @@ public class SpiceNPies
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event)
     {
-    //        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS)
-    //            event.accept(EXAMPLE_BLOCK_ITEM);
+        if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
+            event.accept(GARLIC);
+            event.accept(BASIL);
+        }
+    }
+    @SubscribeEvent
+    public void onFoodEat(PlayerInteractEvent.RightClickItem interact) {
+
+        if (interact.getItemStack().getItem().isEdible()) {
+            System.out.println(interact.getItemStack().getItem().getClass());
+            System.out.println(interact.getItemStack().getItem().getFoodProperties().getNutrition());
+            System.out.println(interact.getItemStack().getItem().getFoodProperties().getSaturationModifier());
+        }
+
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
@@ -78,6 +104,12 @@ public class SpiceNPies
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+        }
+
+        @SubscribeEvent
+        public void Yes(TickEvent.PlayerTickEvent no) {
+            System.out.println("HEEA!");
+
         }
     }
 }
